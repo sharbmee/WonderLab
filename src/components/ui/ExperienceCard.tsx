@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import type { Experience } from "../../types/experience";
 
 // We only need a subset of Experience props for the card.
@@ -19,8 +20,8 @@ export default function ExperienceCard({
     // The anchor wraps the whole card — the entire surface is clickable.
     // `group` is a Tailwind trick: it lets child elements react to the
     // parent's hover state using `group-hover:` classes.
-    <a
-      href={href}
+    <Link
+      to={href}
       className="
         group
         block
@@ -67,6 +68,6 @@ export default function ExperienceCard({
       <p className="text-sm text-neutral-500 leading-relaxed">
         {description}
       </p>
-    </a>
+    </Link>
   );
 }
