@@ -1,14 +1,42 @@
+import { lazy, Suspense } from "react";
 import { useParams, Link } from "react-router-dom";
 import Layout from "../components/layout/Layout";
 
+
 // Experience components — one import per experience
-import CoinFlip from "../experiences/coin-flip/CoinFlip";
-import DiceRoller from "../experiences/dice-roller/DiceRoller";
-import RockPaperScissors from "../experiences/rock-paper-scissors/RockPaperScissors";
-import NumberGuessing from "../experiences/number-guessing/NumberGuessing";
-import ReactionTest from "../experiences/reaction-test/ReactionTest";
-import TypingSpeed from "../experiences/typing-speed/TypingSpeed";
-import MemoryGame from "../experiences/memory-game/MemoryGame";
+// import CoinFlip from "../experiences/coin-flip/CoinFlip";
+// import DiceRoller from "../experiences/dice-roller/DiceRoller";
+// import RockPaperScissors from "../experiences/rock-paper-scissors/RockPaperScissors";
+// import NumberGuessing from "../experiences/number-guessing/NumberGuessing";
+// import ReactionTest from "../experiences/reaction-test/ReactionTest";
+// import TypingSpeed from "../experiences/typing-speed/TypingSpeed";
+// import MemoryGame from "../experiences/memory-game/MemoryGame";
+const CoinFlip = lazy(() => import("../experiences/coin-flip/CoinFlip"));
+const DiceRoller = lazy(() => import("../experiences/dice-roller/DiceRoller"));
+const RockPaperScissors = lazy(() =>
+  import("../experiences/rock-paper-scissors/RockPaperScissors")
+);
+const NumberGuessing = lazy(() =>
+  import("../experiences/number-guessing/NumberGuessing")
+);
+const ReactionTest = lazy(() =>
+  import("../experiences/reaction-test/ReactionTest")
+);
+const TypingSpeed = lazy(() =>
+  import("../experiences/typing-speed/TypingSpeed")
+);
+const MemoryGame = lazy(() =>
+  import("../experiences/memory-game/MemoryGame")
+);
+const Minesweeper = lazy(() =>
+  import("../experiences/minesweeper/Minesweeper")
+);
+const Timeline = lazy(() =>
+  import("../experiences/timeline-of-everything/Timeline")
+);
+const QuantumCats = lazy(() =>
+  import("../experiences/quantum-cats/QuantumCats")
+);
 
 // Map: URL id → component
 // When the URL is /experiences/coin-flip, we render <CoinFlip />
@@ -20,6 +48,10 @@ const experienceMap: Record<string, React.ComponentType> = {
   "reaction-test": ReactionTest,
   "typing-speed": TypingSpeed,
   "memory-game": MemoryGame,
+  "minesweeper": Minesweeper,
+  "timeline": Timeline,
+  "timeline-of-everything": Timeline,
+  "quantum-cats": QuantumCats,
 };
 
 export default function ExperiencePage() {
@@ -64,8 +96,18 @@ export default function ExperiencePage() {
         </Link>
 
         {/* Render the matched experience component */}
-        <ExperienceComponent />
+        <Suspense
+          fallback={
+            <div className="py-24 text-center">
+              <p className="text-5xl mb-4">🧪</p>
+              <p className="text-neutral-500">Loading experience...</p>
+            </div>
+          }
+        >
+          <ExperienceComponent />
+        </Suspense>
       </div>
     </Layout>
+    
   );
 }
