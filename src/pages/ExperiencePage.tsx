@@ -37,6 +37,21 @@ const Timeline = lazy(() =>
 const QuantumCats = lazy(() =>
   import("../experiences/quantum-cats/QuantumCats")
 );
+const BeatLab = lazy(() =>
+  import("../experiences/beatlab/BeatLab")
+);
+const ParticleUniverse = lazy(() =>
+  import("../experiences/particle-universe/ParticleUniverse")
+);
+const ChromaStudio = lazy(() =>
+  import("../experiences/chroma-studio/ChromaStudio")
+);
+const CipherLab = lazy(() =>
+  import("../experiences/cipher-lab/CipherLab")
+);
+const WordSearch = lazy(() =>
+  import("../experiences/word-search/WordSearch")
+);
 
 // Map: URL id → component
 // When the URL is /experiences/coin-flip, we render <CoinFlip />
@@ -52,6 +67,12 @@ const experienceMap: Record<string, React.ComponentType> = {
   "timeline": Timeline,
   "timeline-of-everything": Timeline,
   "quantum-cats": QuantumCats,
+  "beatlab": BeatLab,
+  "particle-universe": ParticleUniverse,
+  "chroma-studio": ChromaStudio,
+  "cipher-lab": CipherLab,
+  "word-search": WordSearch,
+  "word-finder": WordSearch,
 };
 
 export default function ExperiencePage() {

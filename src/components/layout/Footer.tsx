@@ -13,7 +13,7 @@ export default function Footer() {
         {/* Right: Links */}
         <div className="flex items-center gap-6">
           <a
-            href="https://github.com"
+            href="https://github.com/sharbmee/WonderLab"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-neutral-900 transition-colors duration-150"

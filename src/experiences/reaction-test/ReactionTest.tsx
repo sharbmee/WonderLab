@@ -121,10 +121,6 @@ export default function ReactionTest() {
     }
   }
 
-  function reset() {
-    setReactionTime(null);
-    setGameState("idle");
-  }
 
   const cardColor =
     gameState === "ready"

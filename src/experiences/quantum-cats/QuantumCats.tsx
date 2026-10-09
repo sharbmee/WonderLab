@@ -18,7 +18,7 @@ import Header from './Header';
 import Sidebar from './Sidebar';
 import { applyMove, countCats, createEmptyBoard, forceState } from './boardState';
 import { generatePuzzle } from './generator';
-import { getConflictCells, getCatPositions, getRuleStatus, isSolved } from './rules';
+import { getConflictCells, getRuleStatus, isSolved } from './rules';
 import type { Difficulty, GameAction, GameState, Grid, Puzzle } from './types';
 import { findHint, Sounds } from './utils';
 

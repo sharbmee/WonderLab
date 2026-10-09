@@ -167,15 +167,14 @@ const TypingSpeed: React.FC = () => {
         setElapsedSeconds((prev) => prev + 1);
         setTimeRemaining((prev) => {
           if (prev <= 1) {
-            clearTimer();
-            setScreen("finish");
+            finishTest();
             return 0;
           }
           return prev - 1;
         });
       }, 1000);
     }
-  }, [hasStartedTyping, screen, clearTimer]);
+  }, [hasStartedTyping, screen, finishTest]);
 
   useEffect(() => {
     if (screen === "test" && inputRef.current) {
@@ -263,7 +262,7 @@ const TypingSpeed: React.FC = () => {
   }, [currentParagraph, typedText]);
 
   const progressPercent = useMemo(() => {
-    if (selectedDuration === 0) return 0;
+    if ((selectedDuration as unknown as number) === 0) return 0;
     return Math.min(
       100,
       Math.round(((selectedDuration - timeRemaining) / selectedDuration) * 100)
