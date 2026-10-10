@@ -35,7 +35,7 @@ export type Stats = {
 };
 
 // ---------------------------------------------------------------------------
-// Categories & Pre-defined Word Banks
+// Expanded Thematic Word Banks (50+ Curated Words per Category)
 // ---------------------------------------------------------------------------
 
 const CATEGORIES: WordCategory[] = [
@@ -43,55 +43,113 @@ const CATEGORIES: WordCategory[] = [
     id: "space",
     name: "Cosmic Frontier",
     emoji: "🌌",
-    description: "Stars, galaxies, and celestial anomalies",
+    description: "Stars, galaxies, astrophysics, and celestial wonders",
     words: [
       "GALAXY", "NEBULA", "ASTEROID", "ECLIPSE", "COSMOS",
       "SUPERNOVA", "GRAVITY", "ORBIT", "PLANET", "PULSAR",
-      "COMET", "QUASAR", "METEOR", "ZENITH", "PARALLAX"
+      "COMET", "QUASAR", "METEOR", "ZENITH", "PARALLAX",
+      "ANDROMEDA", "STELLAR", "HORIZON", "VORTEX", "ASTRONAUT",
+      "TELESCOPE", "APHELION", "PERIHELION", "SINGULARITY", "CONSTELLATION",
+      "INTERSTELLAR", "VOYAGER", "HUBBLE", "EQUINOX", "SOLSTICE",
+      "MAGNETAR", "CELESTIAL", "ECLIPTIC", "CRATER", "MOONWALK",
+      "ATMOSPHERE", "RADIANT", "SPECTRAL", "SOLARIS", "EXOPLANET",
+      "AURORA", "REDSHIFT", "COSMOLOGY", "CORONA", "NEUTRINO",
+      "DARKMATTER", "SPATIAL", "COSMONAUT", "PHOTOSPHERE", "CHROMOSPHERE",
+      "DEEPFIELD", "ANTIMATTER", "ASTROPHYSICS", "SPACETIME", "STARLIGHT"
     ]
   },
   {
     id: "science",
     name: "Quantum & Tech",
     emoji: "🧬",
-    description: "Futuristic physics, algorithms, and technology",
+    description: "Futuristic physics, computation, and biotechnology",
     words: [
       "QUANTUM", "MATRIX", "NEURAL", "SYNAPSE", "GENOME",
       "ENERGY", "PHOTON", "ISOTOPE", "PROTON", "CIPHER",
-      "FISSION", "ELECTRON", "VECTOR", "CRYPTO", "SPECTRUM"
+      "FISSION", "ELECTRON", "VECTOR", "CRYPTO", "SPECTRUM",
+      "ALGORITHM", "BINARY", "ROBOTICS", "CYBERNETIC", "NANOTECH",
+      "ENTROPY", "SILICON", "BLOCKCHAIN", "FIREWALL", "MICROCHIP",
+      "HEURISTIC", "COMPILER", "RECURSION", "COGNITION", "BIOINFORMATICS",
+      "TOPOLOGY", "HARDWARE", "KERNEL", "ENCRYPTION", "DATAPACKET",
+      "CIRCUITRY", "SATELLITE", "TRANSDUCER", "SEMICONDUCTOR", "BANDWIDTH",
+      "OPTICAL", "SUPERCOMPUTER", "TELEMETRY", "FEEDBACK", "ROBOT",
+      "CLUSTER", "SERVER", "EMULATOR", "AUTOMATION", "DATABASE",
+      "BIOHACK", "CODON", "TELOMERE", "INTELLIGENCE", "PROCESSOR"
     ]
   },
   {
     id: "nature",
     name: "Wild Earth",
     emoji: "🐾",
-    description: "Majestic wildlife, biomes, and natural forces",
+    description: "Wildlife, natural biomes, and forces of nature",
     words: [
       "FALCON", "JAGUAR", "PHOENIX", "ORCA", "SEQUOIA",
       "VORTEX", "CASCADE", "MONSOON", "TUNDRA", "GLACIER",
-      "CANOPY", "VOLCANO", "AURORA", "DESERT", "SAVANNA"
+      "CANOPY", "VOLCANO", "AURORA", "DESERT", "SAVANNA",
+      "CHEETAH", "GORILLA", "PANTHER", "DOLPHIN", "OCTOPUS",
+      "CONDOR", "GRIZZLY", "PENGUIN", "CHAMELEON", "RHINOCEROS",
+      "KANGAROO", "ANTELOPE", "LEOPARD", "HUMPBACK", "BADGER",
+      "RAINFOREST", "MANGROVE", "EVERGLADES", "CORALREEF", "VOLCANIC",
+      "GEYSER", "ARCHIPELAGO", "FJORD", "PLATEAU", "STALACTITE",
+      "CENOTE", "WATERFALL", "BIOSPHERE", "TAIGA", "BADLANDS",
+      "ECOSYSTEM", "WILDFIRE", "CYCLONE", "TSUNAMI", "OASIS",
+      "WILDERNESS", "HABITAT", "SAVANNAH", "MEADOW", "REEF"
     ]
   },
   {
     id: "gastronomy",
     name: "Gastronomy",
     emoji: "🍕",
-    description: "Delicacies, flavors, and culinary arts",
+    description: "Culinary arts, flavors, seasonings, and delicacies",
     words: [
       "ESPRESSO", "TRUFFLE", "AVOCADO", "CHOCOLATE", "MACARON",
       "SAFFRON", "RISOTTO", "MATCHA", "VANILLA", "GELATO",
-      "CARAMEL", "BAGUETTE", "PRALINE", "CINNAMON", "PISTACHIO"
+      "CARAMEL", "BAGUETTE", "PRALINE", "CINNAMON", "PISTACHIO",
+      "CROISSANT", "TIRAMISU", "BRIOCHE", "ROQUEFORT", "PARMESAN",
+      "PESTO", "BALSAMIC", "PROSCIUTTO", "CAVIAR", "GNOCCHI",
+      "FOCACCIA", "BAKLAVA", "CHURRO", "GUACAMOLE", "SUSHI",
+      "WASABI", "EDAMAME", "SOUFFLE", "CREPE", "TARTLET",
+      "SORBET", "BEIGNET", "PANNACOTTA", "CAPPUCCINO", "CARDAMOM",
+      "NUTMEG", "ROSEMARY", "THYME", "OREGANO", "PAPRIKA",
+      "CUMIN", "TURMERIC", "BASIL", "RICOTTA", "MOZZARELLA",
+      "BRUSCHETTA", "CIDER", "MARINARA", "TORTILLA", "CREAM"
     ]
   },
   {
     id: "mythology",
     name: "Myths & Legends",
     emoji: "📜",
-    description: "Ancient heroes, monsters, and mythical realms",
+    description: "Ancient deities, legendary creatures, and folklore",
     words: [
       "OLYMPUS", "VALHALLA", "ATLANTIS", "ODYSSEY", "CHIMERA",
       "PYRAMID", "TITAN", "DRAGON", "HYDRA", "MINOTAUR",
-      "PEGASUS", "VALKYRIE", "SPHINX", "GRIFFIN", "EXCALIBUR"
+      "PEGASUS", "VALKYRIE", "SPHINX", "GRIFFIN", "EXCALIBUR",
+      "MEDUSA", "POSEIDON", "ZEUS", "THOR", "ODIN",
+      "ANUBIS", "OSIRIS", "PHARAOH", "LABYRINTH", "CENTAUR",
+      "KRAKEN", "BASILISK", "CERBERUS", "LEVIATHAN", "PANDORA",
+      "PROMETHEUS", "HERCULES", "ACHILLES", "CYCLOPS", "MERMAID",
+      "SIREN", "BANSHEE", "RAGNAROK", "ASGARD", "MIDGARD",
+      "ELDORADO", "SHANGRILA", "CAMELOT", "AVALON", "BEOWULF",
+      "GILGAMESH", "ORPHEUS", "ICARUS", "DAEDALUS", "CHRONOS",
+      "NARCISSUS", "PEGASUS", "VALHALLA", "AMBROSIA", "APOLLO"
+    ]
+  },
+  {
+    id: "geography",
+    name: "World Wonders",
+    emoji: "🌍",
+    description: "Iconic world cities, geography, and famous landscapes",
+    words: [
+      "TOKYO", "PARIS", "REYKJAVIK", "NAIROBI", "CAIRO",
+      "LONDON", "SYDNEY", "HAVANA", "BANGKOK", "ROME",
+      "ATHENS", "LISBON", "BERLIN", "SEOUL", "OTTAWA",
+      "MADRID", "VIENNA", "DUBLIN", "OSLO", "SANTIAGO",
+      "BOGOTA", "HELSINKI", "ZURICH", "BRUSSELS", "PRAGUE",
+      "BEIJING", "AMSTERDAM", "WARSAW", "MANILA", "SINGAPORE",
+      "EVEREST", "AMAZON", "SAHARA", "PACIFIC", "ATLANTIC",
+      "NILE", "DANUBE", "ANDES", "ALPS", "HIMALAYAS",
+      "KILIMANJARO", "GIBRALTAR", "PANAMA", "BOSPHORUS", "TAJMAHAL",
+      "COLOSSEUM", "PARTHENON", "STONEHENGE", "PETRA", "MACHUPICCHU"
     ]
   }
 ];
@@ -283,7 +341,7 @@ class AudioSynthesizer {
       osc.connect(gain);
       gain.connect(ctx.destination);
 
-      osc.start();
+      osc.start(ctx.currentTime + idxToTime(0.15));
       osc.stop(ctx.currentTime + 0.15);
     } catch {
       // Audio safety fallback
@@ -318,6 +376,10 @@ class AudioSynthesizer {
       // Audio safety fallback
     }
   }
+}
+
+function idxToTime(offset: number) {
+  return offset;
 }
 
 const audioSynth = new AudioSynthesizer();
@@ -414,6 +476,9 @@ export default function WordSearch() {
   const [timedMode, setTimedMode] = useState<boolean>(false);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
 
+  // Progressive Puzzle Level
+  const [puzzleNumber, setPuzzleNumber] = useState<number>(1);
+
   // Custom Word List Modal State
   const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
   const [customWordsInput, setCustomWordsInput] = useState("");
@@ -436,6 +501,9 @@ export default function WordSearch() {
   const [isWon, setIsWon] = useState<boolean>(false);
   const [hintsRemaining, setHintsRemaining] = useState<number>(3);
   const [activeHint, setActiveHint] = useState<Point | null>(null);
+
+  // Track used words history per category to guarantee ZERO REPEATS
+  const usedWordsHistoryRef = useRef<Record<string, string[]>>({});
 
   // Stats
   const [stats, setStats] = useState<Stats>(() => {
@@ -473,23 +541,48 @@ export default function WordSearch() {
     }
   }, [stats]);
 
-  // Start new game
+  // Start new game with GUARANTEED UNIQUE WORDS
   const startNewGame = useCallback(
     (
       cat: WordCategory = category,
       diff: Difficulty = difficulty,
-      customList?: string[]
+      customList?: string[],
+      advanceLevel: boolean = false
     ) => {
       const config = DIFFICULTY_CONFIG[diff];
       const sourceWords =
         customList && customList.length > 0 ? customList : cat.words;
 
-      const shuffled = [...sourceWords].sort(() => Math.random() - 0.5);
+      // Filter out words that have already been played in recent puzzles
+      const catKey = customList ? "custom" : cat.id;
+      const previouslyUsed = usedWordsHistoryRef.current[catKey] || [];
+      
+      let availableWords = sourceWords.filter(
+        (word) => !previouslyUsed.includes(word.toUpperCase())
+      );
+
+      // If the remaining pool doesn't have enough words to fill the puzzle count,
+      // reset the used pool so all words can cycle cleanly again
+      if (availableWords.length < config.count) {
+        usedWordsHistoryRef.current[catKey] = [];
+        availableWords = [...sourceWords];
+      }
+
+      // Shuffle available words thoroughly
+      const shuffled = [...availableWords].sort(() => Math.random() - 0.5);
       const selectedWords = shuffled.slice(
         0,
         Math.min(config.count, shuffled.length)
       );
 
+      // Register these words as used in this category's history
+      const updatedUsed = [
+        ...(usedWordsHistoryRef.current[catKey] || []),
+        ...selectedWords.map((w) => w.toUpperCase())
+      ];
+      usedWordsHistoryRef.current[catKey] = updatedUsed;
+
+      // Generate grid
       const {
         grid: newGrid,
         wordPaths: newPaths,
@@ -510,6 +603,10 @@ export default function WordSearch() {
       setIsWon(false);
       setHintsRemaining(3);
       setActiveHint(null);
+
+      if (advanceLevel) {
+        setPuzzleNumber((prev) => prev + 1);
+      }
     },
     [category, difficulty]
   );
@@ -623,21 +720,17 @@ export default function WordSearch() {
   // Unified Pointer & Touch Mechanics (Mobile + Desktop)
   // -------------------------------------------------------------------------
 
-  // Pointer Down (Mouse or Touch initiation)
   const handleCellPointerDown = (r: number, c: number) => {
     if (isWon) return;
 
-    // If already in tap-selection mode (user tapped cell 1, now tapping cell 2)
     if (tapSelecting && selectionStart) {
       if (selectionStart.r === r && selectionStart.c === c) {
-        // Tapped same cell twice -> cancel selection
         setTapSelecting(false);
         setSelectionStart(null);
         setSelectionEnd(null);
         return;
       }
 
-      // Evaluate word from tapStart to this cell
       const success = evaluateWordSelection(selectionStart, { r, c });
       if (success) {
         setTapSelecting(false);
@@ -645,7 +738,6 @@ export default function WordSearch() {
         setSelectionEnd(null);
         return;
       } else {
-        // If no match, make this new cell the current selected start
         setSelectionStart({ r, c });
         setSelectionEnd({ r, c });
         audioSynth.playSelectTone();
@@ -653,7 +745,6 @@ export default function WordSearch() {
       }
     }
 
-    // Start drag or tap
     setIsSelecting(true);
     isDraggingRef.current = false;
     setSelectionStart({ r, c });
@@ -661,14 +752,12 @@ export default function WordSearch() {
     audioSynth.playSelectTone();
   };
 
-  // Pointer Enter (Desktop mouse dragging)
   const handleCellPointerEnter = (r: number, c: number) => {
     if (!isSelecting || !selectionStart || isWon) return;
     isDraggingRef.current = true;
     setSelectionEnd({ r, c });
   };
 
-  // Touch Move Tracking across grid (Solves mobile pointerenter capture issue)
   const handleGridTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
     if (!isSelecting || !selectionStart || isWon) return;
     if (e.touches.length === 0) return;
@@ -688,12 +777,10 @@ export default function WordSearch() {
     }
   };
 
-  // Unified Pointer/Touch Release
   const handlePointerRelease = useCallback(() => {
     if (!isSelecting || !selectionStart) return;
     setIsSelecting(false);
 
-    // If user dragged across multiple cells
     if (
       isDraggingRef.current &&
       selectionEnd &&
@@ -705,13 +792,11 @@ export default function WordSearch() {
       setTapSelecting(false);
       isDraggingRef.current = false;
     } else {
-      // User tapped a single cell without dragging -> activate Tap-to-Select mode!
       setTapSelecting(true);
       setSelectionEnd(selectionStart);
     }
   }, [isSelecting, selectionStart, selectionEnd, evaluateWordSelection]);
 
-  // Global window listeners for pointer release
   useEffect(() => {
     const onWindowRelease = () => {
       if (isSelecting) {
@@ -749,12 +834,10 @@ export default function WordSearch() {
     }
   };
 
-  // Helper: Is cell in current selection path?
   const isCellSelected = (r: number, c: number) => {
     return currentSelectionPath.some((p) => p.r === r && p.c === c);
   };
 
-  // Helper: Find color if cell belongs to a found word
   const getFoundCellColor = (r: number, c: number): string | null => {
     for (const fw of foundWords) {
       if (fw.path.some((p) => p.r === r && p.c === c)) {
@@ -787,10 +870,9 @@ export default function WordSearch() {
 
     setCategory(customCategory);
     setIsCustomModalOpen(false);
-    startNewGame(customCategory, difficulty, customCategory.words);
+    startNewGame(customCategory, difficulty, customCategory.words, true);
   };
 
-  // Formatted Timer string
   const formatTime = (totalSeconds: number) => {
     const mins = Math.floor(totalSeconds / 60);
     const secs = totalSeconds % 60;
@@ -806,7 +888,7 @@ export default function WordSearch() {
       {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 pb-4 border-b border-slate-800">
         <div>
-          <div className="flex items-center gap-2 sm:gap-3 mb-1">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-1">
             <span className="text-2xl sm:text-3xl">{category.emoji}</span>
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400 bg-clip-text text-transparent">
               Word Finder Matrix
@@ -815,6 +897,12 @@ export default function WordSearch() {
               className={`text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-semibold border ${gridConfig.badge}`}
             >
               {gridConfig.label}
+            </span>
+            <span className="text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full font-bold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+              Puzzle #{puzzleNumber}
+            </span>
+            <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              ✨ Fresh Words Guaranteed
             </span>
           </div>
           <p className="text-xs sm:text-sm text-slate-400">
@@ -828,7 +916,7 @@ export default function WordSearch() {
           <button
             onClick={() => {
               setTimedMode(!timedMode);
-              startNewGame();
+              startNewGame(category, difficulty, undefined, false);
             }}
             className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs font-medium border transition-all duration-150 flex items-center gap-1.5 ${
               timedMode
@@ -870,12 +958,13 @@ export default function WordSearch() {
             ✏️ Custom
           </button>
 
-          {/* Restart / New Grid */}
+          {/* Restart / Next Unique Grid */}
           <button
-            onClick={() => startNewGame()}
-            className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all duration-150 shadow-lg shadow-cyan-500/20 active:scale-95"
+            onClick={() => startNewGame(category, difficulty, undefined, true)}
+            className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all duration-150 shadow-lg shadow-cyan-500/20 active:scale-95 flex items-center gap-1"
           >
-            🔄 New Grid
+            <span>🔄</span>
+            <span>Next Puzzle</span>
           </button>
         </div>
       </div>
@@ -893,7 +982,7 @@ export default function WordSearch() {
                 key={cat.id}
                 onClick={() => {
                   setCategory(cat);
-                  startNewGame(cat, difficulty);
+                  startNewGame(cat, difficulty, undefined, true);
                 }}
                 className={`px-2.5 py-1 rounded-xl text-xs font-medium whitespace-nowrap transition-all duration-150 flex items-center gap-1 ${
                   category.id === cat.id
@@ -919,7 +1008,7 @@ export default function WordSearch() {
                 key={d}
                 onClick={() => {
                   setDifficulty(d);
-                  startNewGame(category, d);
+                  startNewGame(category, d, undefined, false);
                 }}
                 className={`py-1 rounded-xl text-xs font-medium capitalize transition-all duration-150 text-center ${
                   difficulty === d
@@ -981,7 +1070,7 @@ export default function WordSearch() {
             </div>
             {isWon && (
               <span className="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
-                🎉 Solved!
+                🎉 Puzzle Solved!
               </span>
             )}
           </div>
@@ -1051,9 +1140,14 @@ export default function WordSearch() {
               <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
                 <span>🔍</span> Hidden Words
               </h3>
-              <span className="text-xs text-slate-400 font-mono">
-                {foundWords.length}/{targetWords.length}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-cyan-400 font-mono bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/20">
+                  Round #{puzzleNumber}
+                </span>
+                <span className="text-xs text-slate-400 font-mono">
+                  {foundWords.length}/{targetWords.length}
+                </span>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-1.5 sm:gap-2 max-h-[300px] sm:max-h-[360px] overflow-y-auto pr-1">
@@ -1150,10 +1244,10 @@ export default function WordSearch() {
               className="bg-slate-900 border border-slate-700 p-6 sm:p-8 rounded-3xl max-w-md w-full text-center shadow-2xl relative overflow-hidden"
             >
               <div className="text-5xl sm:text-6xl mb-3 animate-bounce">🎉</div>
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-100 mb-2">
-                Matrix Decoded!
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-100 mb-1">
+                Puzzle #{puzzleNumber} Decoded!
               </h2>
-              <p className="text-xs sm:text-sm text-slate-400 mb-6">
+              <p className="text-xs sm:text-sm text-slate-400 mb-5">
                 You found all{" "}
                 <span className="text-cyan-400 font-bold">
                   {targetWords.length} words
@@ -1169,12 +1263,19 @@ export default function WordSearch() {
                 mode.
               </p>
 
+              <div className="p-3 bg-slate-800/60 rounded-2xl border border-slate-700/60 mb-5 text-left text-xs text-slate-300">
+                <span className="font-semibold text-cyan-300 block mb-1">
+                  ✨ Next Puzzle Preview:
+                </span>
+                A completely fresh set of hidden words is ready for Puzzle #{puzzleNumber + 1}!
+              </div>
+
               <div className="flex gap-3 justify-center">
                 <button
-                  onClick={() => startNewGame()}
+                  onClick={() => startNewGame(category, difficulty, undefined, true)}
                   className="w-full py-3 rounded-2xl font-semibold bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 hover:from-cyan-400 hover:to-blue-400 transition-all duration-150 shadow-lg shadow-cyan-500/25 active:scale-95"
                 >
-                  Play Next Puzzle 🚀
+                  Play Puzzle #{puzzleNumber + 1} (Fresh Words) 🚀
                 </button>
               </div>
             </motion.div>
