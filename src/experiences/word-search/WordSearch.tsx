@@ -96,7 +96,17 @@ const CATEGORIES: WordCategory[] = [
   }
 ];
 
-const DIFFICULTY_CONFIG: Record<Difficulty, { size: number; count: number; allowedDirs: Point[]; label: string; badge: string }> = {
+const DIFFICULTY_CONFIG: Record<
+  Difficulty,
+  {
+    size: number;
+    count: number;
+    allowedDirs: Point[];
+    label: string;
+    badge: string;
+    cellFont: string;
+  }
+> = {
   easy: {
     size: 10,
     count: 6,
@@ -106,7 +116,8 @@ const DIFFICULTY_CONFIG: Record<Difficulty, { size: number; count: number; allow
       { r: 1, c: 1 }   // Diagonal Down-Right
     ],
     label: "Easy (10x10)",
-    badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+    badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+    cellFont: "text-xs sm:text-base md:text-lg"
   },
   medium: {
     size: 12,
@@ -119,7 +130,8 @@ const DIFFICULTY_CONFIG: Record<Difficulty, { size: number; count: number; allow
       { r: 0, c: -1 }  // Left
     ],
     label: "Medium (12x12)",
-    badge: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30"
+    badge: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30",
+    cellFont: "text-[11px] sm:text-sm md:text-base"
   },
   hard: {
     size: 14,
@@ -135,7 +147,8 @@ const DIFFICULTY_CONFIG: Record<Difficulty, { size: number; count: number; allow
       { r: -1, c: -1 }  // Up-Left
     ],
     label: "Hard (14x14)",
-    badge: "bg-purple-500/10 text-purple-400 border-purple-500/30"
+    badge: "bg-purple-500/10 text-purple-400 border-purple-500/30",
+    cellFont: "text-[9px] sm:text-xs md:text-sm"
   },
   expert: {
     size: 16,
@@ -151,7 +164,8 @@ const DIFFICULTY_CONFIG: Record<Difficulty, { size: number; count: number; allow
       { r: -1, c: -1 }  // Up-Left
     ],
     label: "Expert (16x16)",
-    badge: "bg-rose-500/10 text-rose-400 border-rose-500/30"
+    badge: "bg-rose-500/10 text-rose-400 border-rose-500/30",
+    cellFont: "text-[8px] sm:text-[11px] md:text-xs"
   }
 };
 
@@ -171,7 +185,7 @@ const PASTEL_COLORS = [
 ];
 
 // ---------------------------------------------------------------------------
-// Sound Synthesizer (Web Audio API)
+// Sound Synthesizer (Web Audio API with Mobile Safe Handling)
 // ---------------------------------------------------------------------------
 
 class AudioSynthesizer {
@@ -180,100 +194,129 @@ class AudioSynthesizer {
 
   private getContext(): AudioContext | null {
     if (!this.enabled) return null;
-    if (!this.ctx && typeof window !== "undefined") {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (AudioCtx) {
-        this.ctx = new AudioCtx();
+    try {
+      if (!this.ctx && typeof window !== "undefined") {
+        const AudioCtx =
+          window.AudioContext ||
+          (window as unknown as { webkitAudioContext: typeof AudioContext })
+            .webkitAudioContext;
+        if (AudioCtx) {
+          this.ctx = new AudioCtx();
+        }
       }
+      if (this.ctx && this.ctx.state === "suspended") {
+        this.ctx.resume().catch(() => {});
+      }
+      return this.ctx;
+    } catch {
+      return null;
     }
-    if (this.ctx && this.ctx.state === "suspended") {
-      this.ctx.resume();
-    }
-    return this.ctx;
   }
 
   playSelectTone() {
-    const ctx = this.getContext();
-    if (!ctx) return;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(440, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.05);
-
-    gain.gain.setValueAtTime(0.08, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start();
-    osc.stop(ctx.currentTime + 0.05);
-  }
-
-  playFoundWordSound() {
-    const ctx = this.getContext();
-    if (!ctx) return;
-    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
-    notes.forEach((freq, idx) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = "triangle";
-      osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.07);
-
-      gain.gain.setValueAtTime(0.12, ctx.currentTime + idx * 0.07);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.07 + 0.25);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start(ctx.currentTime + idx * 0.07);
-      osc.stop(ctx.currentTime + idx * 0.07 + 0.25);
-    });
-  }
-
-  playHintSound() {
-    const ctx = this.getContext();
-    if (!ctx) return;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(600, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.15);
-
-    gain.gain.setValueAtTime(0.1, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start();
-    osc.stop(ctx.currentTime + 0.15);
-  }
-
-  playVictorySound() {
-    const ctx = this.getContext();
-    if (!ctx) return;
-    const chord = [523.25, 659.25, 783.99, 1046.50, 1318.51];
-    chord.forEach((freq, idx) => {
+    try {
+      const ctx = this.getContext();
+      if (!ctx) return;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
       osc.type = "sine";
-      osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.09);
+      osc.frequency.setValueAtTime(440, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.05);
 
-      gain.gain.setValueAtTime(0.15, ctx.currentTime + idx * 0.09);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.09 + 0.6);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
 
       osc.connect(gain);
       gain.connect(ctx.destination);
 
-      osc.start(ctx.currentTime + idx * 0.09);
-      osc.stop(ctx.currentTime + idx * 0.09 + 0.6);
-    });
+      osc.start();
+      osc.stop(ctx.currentTime + 0.05);
+    } catch {
+      // Audio safety fallback
+    }
+  }
+
+  playFoundWordSound() {
+    try {
+      const ctx = this.getContext();
+      if (!ctx) return;
+      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.07);
+
+        gain.gain.setValueAtTime(0.12, ctx.currentTime + idx * 0.07);
+        gain.gain.exponentialRampToValueAtTime(
+          0.001,
+          ctx.currentTime + idx * 0.07 + 0.25
+        );
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(ctx.currentTime + idx * 0.07);
+        osc.stop(ctx.currentTime + idx * 0.07 + 0.25);
+      });
+    } catch {
+      // Audio safety fallback
+    }
+  }
+
+  playHintSound() {
+    try {
+      const ctx = this.getContext();
+      if (!ctx) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(600, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.15);
+
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
+    } catch {
+      // Audio safety fallback
+    }
+  }
+
+  playVictorySound() {
+    try {
+      const ctx = this.getContext();
+      if (!ctx) return;
+      const chord = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+      chord.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.09);
+
+        gain.gain.setValueAtTime(0.15, ctx.currentTime + idx * 0.09);
+        gain.gain.exponentialRampToValueAtTime(
+          0.001,
+          ctx.currentTime + idx * 0.09 + 0.6
+        );
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(ctx.currentTime + idx * 0.09);
+        osc.stop(ctx.currentTime + idx * 0.09 + 0.6);
+      });
+    } catch {
+      // Audio safety fallback
+    }
   }
 }
 
@@ -294,7 +337,6 @@ function generateWordGrid(
   size: number,
   allowedDirs: Point[]
 ): GridPlacement {
-  // Initialize empty grid
   const grid: string[][] = Array.from({ length: size }, () =>
     Array.from({ length: size }, () => "")
   );
@@ -302,7 +344,6 @@ function generateWordGrid(
   const wordPaths: Record<string, Point[]> = {};
   const placedWords: string[] = [];
 
-  // Sort words by length descending to place larger words first
   const sortedWords = [...wordsToPlace].sort((a, b) => b.length - a.length);
 
   for (const word of sortedWords) {
@@ -316,7 +357,6 @@ function generateWordGrid(
       const startR = Math.floor(Math.random() * size);
       const startC = Math.floor(Math.random() * size);
 
-      // Check if word fits
       const endR = startR + dir.r * (cleanWord.length - 1);
       const endC = startC + dir.c * (cleanWord.length - 1);
 
@@ -324,7 +364,6 @@ function generateWordGrid(
         continue;
       }
 
-      // Check overlap validity
       let valid = true;
       const path: Point[] = [];
 
@@ -341,7 +380,6 @@ function generateWordGrid(
       }
 
       if (valid) {
-        // Commit word to grid
         for (let i = 0; i < cleanWord.length; i++) {
           const { r, c } = path[i];
           grid[r][c] = cleanWord[i];
@@ -353,7 +391,6 @@ function generateWordGrid(
     }
   }
 
-  // Fill empty spots with random A-Z letters
   const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
@@ -386,11 +423,12 @@ export default function WordSearch() {
   const [targetWords, setTargetWords] = useState<string[]>([]);
   const [wordPaths, setWordPaths] = useState<Record<string, Point[]>>({});
   const [foundWords, setFoundWords] = useState<FoundWord[]>([]);
-  
-  // Selection Drag State
+
+  // Selection Drag & Tap State
   const [selectionStart, setSelectionStart] = useState<Point | null>(null);
   const [selectionEnd, setSelectionEnd] = useState<Point | null>(null);
   const [isSelecting, setIsSelecting] = useState<boolean>(false);
+  const [tapSelecting, setTapSelecting] = useState<boolean>(false);
 
   // Timer & Game Status
   const [seconds, setSeconds] = useState<number>(0);
@@ -421,6 +459,7 @@ export default function WordSearch() {
   });
 
   const gridRef = useRef<HTMLDivElement>(null);
+  const isDraggingRef = useRef<boolean>(false);
 
   // Sync Audio Mute setting
   useEffect(() => {
@@ -435,37 +474,45 @@ export default function WordSearch() {
   }, [stats]);
 
   // Start new game
-  const startNewGame = useCallback((
-    cat: WordCategory = category,
-    diff: Difficulty = difficulty,
-    customList?: string[]
-  ) => {
-    const config = DIFFICULTY_CONFIG[diff];
-    const sourceWords = customList && customList.length > 0 ? customList : cat.words;
+  const startNewGame = useCallback(
+    (
+      cat: WordCategory = category,
+      diff: Difficulty = difficulty,
+      customList?: string[]
+    ) => {
+      const config = DIFFICULTY_CONFIG[diff];
+      const sourceWords =
+        customList && customList.length > 0 ? customList : cat.words;
 
-    // Pick random subset of words for current puzzle
-    const shuffled = [...sourceWords].sort(() => Math.random() - 0.5);
-    const selectedWords = shuffled.slice(0, Math.min(config.count, shuffled.length));
+      const shuffled = [...sourceWords].sort(() => Math.random() - 0.5);
+      const selectedWords = shuffled.slice(
+        0,
+        Math.min(config.count, shuffled.length)
+      );
 
-    const { grid: newGrid, wordPaths: newPaths, placedWords } = generateWordGrid(
-      selectedWords,
-      config.size,
-      config.allowedDirs
-    );
+      const {
+        grid: newGrid,
+        wordPaths: newPaths,
+        placedWords
+      } = generateWordGrid(selectedWords, config.size, config.allowedDirs);
 
-    setGrid(newGrid);
-    setTargetWords(placedWords);
-    setWordPaths(newPaths);
-    setFoundWords([]);
-    setSelectionStart(null);
-    setSelectionEnd(null);
-    setIsSelecting(false);
-    setSeconds(0);
-    setTimerActive(true);
-    setIsWon(false);
-    setHintsRemaining(3);
-    setActiveHint(null);
-  }, [category, difficulty]);
+      setGrid(newGrid);
+      setTargetWords(placedWords);
+      setWordPaths(newPaths);
+      setFoundWords([]);
+      setSelectionStart(null);
+      setSelectionEnd(null);
+      setIsSelecting(false);
+      setTapSelecting(false);
+      isDraggingRef.current = false;
+      setSeconds(0);
+      setTimerActive(true);
+      setIsWon(false);
+      setHintsRemaining(3);
+      setActiveHint(null);
+    },
+    [category, difficulty]
+  );
 
   // Initial Game Setup
   useEffect(() => {
@@ -489,9 +536,9 @@ export default function WordSearch() {
     const absDr = Math.abs(dr);
     const absDc = Math.abs(dc);
 
-    // Check if straight horizontal, vertical, or exact 45-deg diagonal
+    // Check if straight horizontal, vertical, or exact diagonal
     if (dr !== 0 && dc !== 0 && absDr !== absDc) {
-      return [start]; // invalid non-linear selection
+      return [start];
     }
 
     const stepR = dr === 0 ? 0 : dr / absDr;
@@ -508,106 +555,185 @@ export default function WordSearch() {
     return path;
   };
 
-  const currentSelectionPath = selectionStart && selectionEnd
-    ? calculateSelectionPath(selectionStart, selectionEnd)
-    : [];
+  const currentSelectionPath =
+    selectionStart && selectionEnd
+      ? calculateSelectionPath(selectionStart, selectionEnd)
+      : selectionStart
+      ? [selectionStart]
+      : [];
 
   const currentSelectionString = currentSelectionPath
     .map(({ r, c }) => grid[r]?.[c] || "")
     .join("");
 
-  // Handle pointer down (Mouse/Touch)
-  const handlePointerDown = (r: number, c: number) => {
+  // Check if a given start & end connects a valid target word
+  const evaluateWordSelection = useCallback(
+    (start: Point, end: Point): boolean => {
+      const path = calculateSelectionPath(start, end);
+      const selectedStr = path.map(({ r, c }) => grid[r]?.[c] || "").join("");
+      const reversedStr = selectedStr.split("").reverse().join("");
+
+      const matchedWord = targetWords.find((w) => {
+        const alreadyFound = foundWords.some((fw) => fw.word === w);
+        return !alreadyFound && (w === selectedStr || w === reversedStr);
+      });
+
+      if (matchedWord) {
+        const colorIndex = foundWords.length % PASTEL_COLORS.length;
+        const color = PASTEL_COLORS[colorIndex];
+
+        const newFound: FoundWord = {
+          word: matchedWord,
+          color,
+          path: wordPaths[matchedWord] || path
+        };
+
+        const nextFoundWords = [...foundWords, newFound];
+        setFoundWords(nextFoundWords);
+        audioSynth.playFoundWordSound();
+
+        if (nextFoundWords.length === targetWords.length) {
+          setIsWon(true);
+          setTimerActive(false);
+          audioSynth.playVictorySound();
+
+          setStats((prev) => {
+            const currentBest = prev.bestTimes[difficulty];
+            const isNewBest = currentBest === null || seconds < currentBest;
+            return {
+              gamesPlayed: prev.gamesPlayed + 1,
+              gamesWon: prev.gamesWon + 1,
+              wordsFound: prev.wordsFound + targetWords.length,
+              bestTimes: {
+                ...prev.bestTimes,
+                [difficulty]: isNewBest ? seconds : currentBest
+              },
+              totalScore: prev.totalScore + Math.max(100, 1000 - seconds * 5)
+            };
+          });
+        }
+        return true;
+      }
+      return false;
+    },
+    [grid, targetWords, foundWords, wordPaths, difficulty, seconds]
+  );
+
+  // -------------------------------------------------------------------------
+  // Unified Pointer & Touch Mechanics (Mobile + Desktop)
+  // -------------------------------------------------------------------------
+
+  // Pointer Down (Mouse or Touch initiation)
+  const handleCellPointerDown = (r: number, c: number) => {
     if (isWon) return;
+
+    // If already in tap-selection mode (user tapped cell 1, now tapping cell 2)
+    if (tapSelecting && selectionStart) {
+      if (selectionStart.r === r && selectionStart.c === c) {
+        // Tapped same cell twice -> cancel selection
+        setTapSelecting(false);
+        setSelectionStart(null);
+        setSelectionEnd(null);
+        return;
+      }
+
+      // Evaluate word from tapStart to this cell
+      const success = evaluateWordSelection(selectionStart, { r, c });
+      if (success) {
+        setTapSelecting(false);
+        setSelectionStart(null);
+        setSelectionEnd(null);
+        return;
+      } else {
+        // If no match, make this new cell the current selected start
+        setSelectionStart({ r, c });
+        setSelectionEnd({ r, c });
+        audioSynth.playSelectTone();
+        return;
+      }
+    }
+
+    // Start drag or tap
     setIsSelecting(true);
+    isDraggingRef.current = false;
     setSelectionStart({ r, c });
     setSelectionEnd({ r, c });
     audioSynth.playSelectTone();
   };
 
-  // Handle pointer enter (Drag over cells)
-  const handlePointerEnter = (r: number, c: number) => {
+  // Pointer Enter (Desktop mouse dragging)
+  const handleCellPointerEnter = (r: number, c: number) => {
     if (!isSelecting || !selectionStart || isWon) return;
+    isDraggingRef.current = true;
     setSelectionEnd({ r, c });
   };
 
-  // Check selection completion on Pointer Up
-  const handlePointerUp = useCallback(() => {
-    if (!isSelecting || !selectionStart || !selectionEnd) return;
-    setIsSelecting(false);
+  // Touch Move Tracking across grid (Solves mobile pointerenter capture issue)
+  const handleGridTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isSelecting || !selectionStart || isWon) return;
+    if (e.touches.length === 0) return;
 
-    const path = calculateSelectionPath(selectionStart, selectionEnd);
-    const selectedStr = path.map(({ r, c }) => grid[r]?.[c] || "").join("");
-    const reversedStr = selectedStr.split("").reverse().join("");
+    const touch = e.touches[0];
+    const elem = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (!elem) return;
 
-    // Find matching word
-    const matchedWord = targetWords.find((w) => {
-      const alreadyFound = foundWords.some((fw) => fw.word === w);
-      return !alreadyFound && (w === selectedStr || w === reversedStr);
-    });
-
-    if (matchedWord) {
-      // Pick unique color for found word
-      const colorIndex = foundWords.length % PASTEL_COLORS.length;
-      const color = PASTEL_COLORS[colorIndex];
-
-      const newFound: FoundWord = {
-        word: matchedWord,
-        color,
-        path: wordPaths[matchedWord] || path
-      };
-
-      const nextFoundWords = [...foundWords, newFound];
-      setFoundWords(nextFoundWords);
-      audioSynth.playFoundWordSound();
-
-      // Check victory
-      if (nextFoundWords.length === targetWords.length) {
-        setIsWon(true);
-        setTimerActive(false);
-        audioSynth.playVictorySound();
-
-        // Update stats
-        setStats((prev) => {
-          const currentBest = prev.bestTimes[difficulty];
-          const isNewBest = currentBest === null || seconds < currentBest;
-          return {
-            gamesPlayed: prev.gamesPlayed + 1,
-            gamesWon: prev.gamesWon + 1,
-            wordsFound: prev.wordsFound + targetWords.length,
-            bestTimes: {
-              ...prev.bestTimes,
-              [difficulty]: isNewBest ? seconds : currentBest
-            },
-            totalScore: prev.totalScore + Math.max(100, 1000 - seconds * 5)
-          };
-        });
+    const cellEl = elem.closest<HTMLElement>("[data-cell='true']");
+    if (cellEl) {
+      const r = Number(cellEl.getAttribute("data-row"));
+      const c = Number(cellEl.getAttribute("data-col"));
+      if (!isNaN(r) && !isNaN(c)) {
+        isDraggingRef.current = true;
+        setSelectionEnd({ r, c });
       }
     }
+  };
 
-    setSelectionStart(null);
-    setSelectionEnd(null);
-  }, [isSelecting, selectionStart, selectionEnd, grid, targetWords, foundWords, wordPaths, difficulty, seconds]);
+  // Unified Pointer/Touch Release
+  const handlePointerRelease = useCallback(() => {
+    if (!isSelecting || !selectionStart) return;
+    setIsSelecting(false);
 
-  // Global mouseup release listener
+    // If user dragged across multiple cells
+    if (
+      isDraggingRef.current &&
+      selectionEnd &&
+      (selectionStart.r !== selectionEnd.r || selectionStart.c !== selectionEnd.c)
+    ) {
+      evaluateWordSelection(selectionStart, selectionEnd);
+      setSelectionStart(null);
+      setSelectionEnd(null);
+      setTapSelecting(false);
+      isDraggingRef.current = false;
+    } else {
+      // User tapped a single cell without dragging -> activate Tap-to-Select mode!
+      setTapSelecting(true);
+      setSelectionEnd(selectionStart);
+    }
+  }, [isSelecting, selectionStart, selectionEnd, evaluateWordSelection]);
+
+  // Global window listeners for pointer release
   useEffect(() => {
-    const onGlobalUp = () => {
+    const onWindowRelease = () => {
       if (isSelecting) {
-        handlePointerUp();
+        handlePointerRelease();
       }
     };
-    window.addEventListener("mouseup", onGlobalUp);
-    window.addEventListener("touchend", onGlobalUp);
+    window.addEventListener("pointerup", onWindowRelease);
+    window.addEventListener("mouseup", onWindowRelease);
+    window.addEventListener("touchend", onWindowRelease);
     return () => {
-      window.removeEventListener("mouseup", onGlobalUp);
-      window.removeEventListener("touchend", onGlobalUp);
+      window.removeEventListener("pointerup", onWindowRelease);
+      window.removeEventListener("mouseup", onWindowRelease);
+      window.removeEventListener("touchend", onWindowRelease);
     };
-  }, [isSelecting, handlePointerUp]);
+  }, [isSelecting, handlePointerRelease]);
 
   // Hint Action: Highlight first letter of unfound word
   const useHint = () => {
     if (hintsRemaining <= 0 || isWon) return;
-    const unfound = targetWords.filter((w) => !foundWords.some((fw) => fw.word === w));
+    const unfound = targetWords.filter(
+      (w) => !foundWords.some((fw) => fw.word === w)
+    );
     if (unfound.length === 0) return;
 
     const randomWord = unfound[Math.floor(Math.random() * unfound.length)];
@@ -668,39 +794,43 @@ export default function WordSearch() {
   const formatTime = (totalSeconds: number) => {
     const mins = Math.floor(totalSeconds / 60);
     const secs = totalSeconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    return `${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   const gridConfig = DIFFICULTY_CONFIG[difficulty];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-4 min-h-screen text-slate-100 select-none">
+    <div className="max-w-6xl mx-auto px-2 sm:px-4 py-3 min-h-screen text-slate-100 select-none">
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-6 border-b border-slate-800">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 pb-4 border-b border-slate-800">
         <div>
-          <div className="flex items-center gap-3 mb-1">
-            <span className="text-3xl">{category.emoji}</span>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400 bg-clip-text text-transparent">
+          <div className="flex items-center gap-2 sm:gap-3 mb-1">
+            <span className="text-2xl sm:text-3xl">{category.emoji}</span>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400 bg-clip-text text-transparent">
               Word Finder Matrix
             </h1>
-            <span className={`text-xs px-2.5 py-1 rounded-full font-semibold border ${gridConfig.badge}`}>
+            <span
+              className={`text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-semibold border ${gridConfig.badge}`}
+            >
               {gridConfig.label}
             </span>
           </div>
-          <p className="text-sm text-slate-400">
-            Drag across letters horizontally, vertically, or diagonally to uncover hidden words!
+          <p className="text-xs sm:text-sm text-slate-400">
+            Drag across letters or <span className="text-cyan-300 font-semibold">tap the start & end letters</span> to find words!
           </p>
         </div>
 
         {/* Action Controls */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           {/* Timed Mode Toggle */}
           <button
             onClick={() => {
               setTimedMode(!timedMode);
               startNewGame();
             }}
-            className={`px-3 py-2 rounded-xl text-xs font-medium border transition-all duration-150 flex items-center gap-1.5 ${
+            className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs font-medium border transition-all duration-150 flex items-center gap-1.5 ${
               timedMode
                 ? "bg-rose-500/10 text-rose-300 border-rose-500/30 hover:bg-rose-500/20"
                 : "bg-emerald-500/10 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20"
@@ -713,7 +843,7 @@ export default function WordSearch() {
           {/* Audio Toggle */}
           <button
             onClick={() => setSoundEnabled(!soundEnabled)}
-            className={`px-3 py-2 rounded-xl text-xs font-medium border transition-all duration-150 flex items-center gap-1.5 ${
+            className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs font-medium border transition-all duration-150 flex items-center gap-1.5 ${
               soundEnabled
                 ? "bg-slate-800/90 text-cyan-300 border-cyan-500/30 hover:bg-slate-700"
                 : "bg-slate-900/60 text-slate-500 border-slate-800 hover:bg-slate-800"
@@ -727,7 +857,7 @@ export default function WordSearch() {
           <button
             onClick={useHint}
             disabled={hintsRemaining <= 0 || isWon}
-            className="px-3 py-2 rounded-xl text-xs font-medium bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 flex items-center gap-1.5"
+            className="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs font-medium bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 flex items-center gap-1.5"
           >
             💡 Hint ({hintsRemaining})
           </button>
@@ -735,15 +865,15 @@ export default function WordSearch() {
           {/* Custom Words */}
           <button
             onClick={() => setIsCustomModalOpen(true)}
-            className="px-3 py-2 rounded-xl text-xs font-medium bg-purple-500/10 text-purple-300 border border-purple-500/30 hover:bg-purple-500/20 transition-all duration-150 flex items-center gap-1.5"
+            className="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs font-medium bg-purple-500/10 text-purple-300 border border-purple-500/30 hover:bg-purple-500/20 transition-all duration-150 flex items-center gap-1.5"
           >
-            ✏️ Custom Words
+            ✏️ Custom
           </button>
 
           {/* Restart / New Grid */}
           <button
             onClick={() => startNewGame()}
-            className="px-4 py-2 rounded-xl text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all duration-150 shadow-lg shadow-cyan-500/20 active:scale-95"
+            className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all duration-150 shadow-lg shadow-cyan-500/20 active:scale-95"
           >
             🔄 New Grid
           </button>
@@ -751,13 +881,13 @@ export default function WordSearch() {
       </div>
 
       {/* Control Bar: Categories & Difficulties */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         {/* Category Selector */}
-        <div className="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-3">
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">
+        <div className="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-2.5 sm:p-3">
+          <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">
             Theme / Category
           </label>
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+          <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
             {CATEGORIES.map((cat) => (
               <button
                 key={cat.id}
@@ -765,7 +895,7 @@ export default function WordSearch() {
                   setCategory(cat);
                   startNewGame(cat, difficulty);
                 }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all duration-150 flex items-center gap-1.5 ${
+                className={`px-2.5 py-1 rounded-xl text-xs font-medium whitespace-nowrap transition-all duration-150 flex items-center gap-1 ${
                   category.id === cat.id
                     ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40"
                     : "bg-slate-800/60 text-slate-400 hover:text-slate-200 hover:bg-slate-800"
@@ -779,11 +909,11 @@ export default function WordSearch() {
         </div>
 
         {/* Difficulty Selector */}
-        <div className="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-3">
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">
-            Grid Size & Directions
+        <div className="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-2.5 sm:p-3">
+          <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">
+            Grid Size
           </label>
-          <div className="grid grid-cols-4 gap-1.5">
+          <div className="grid grid-cols-4 gap-1">
             {(["easy", "medium", "hard", "expert"] as Difficulty[]).map((d) => (
               <button
                 key={d}
@@ -791,7 +921,7 @@ export default function WordSearch() {
                   setDifficulty(d);
                   startNewGame(category, d);
                 }}
-                className={`py-1.5 rounded-xl text-xs font-medium capitalize transition-all duration-150 text-center ${
+                className={`py-1 rounded-xl text-xs font-medium capitalize transition-all duration-150 text-center ${
                   difficulty === d
                     ? "bg-indigo-500/25 text-indigo-300 border border-indigo-500/40 font-semibold"
                     : "bg-slate-800/60 text-slate-400 hover:text-slate-200"
@@ -804,52 +934,63 @@ export default function WordSearch() {
         </div>
 
         {/* Live Timer & Stats */}
-        <div className="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-3 flex items-center justify-between">
+        <div className="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-2.5 sm:p-3 flex items-center justify-between">
           <div>
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
+            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
               Elapsed Time
             </span>
-            <div className="text-2xl font-mono font-bold text-cyan-400 mt-0.5">
+            <div className="text-xl sm:text-2xl font-mono font-bold text-cyan-400 mt-0.5">
               {formatTime(seconds)}
             </div>
           </div>
           <div className="text-right">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
+            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
               Progress
             </span>
-            <div className="text-xl font-bold text-slate-200 mt-0.5">
-              <span className="text-emerald-400">{foundWords.length}</span> / {targetWords.length}
+            <div className="text-lg sm:text-xl font-bold text-slate-200 mt-0.5">
+              <span className="text-emerald-400">{foundWords.length}</span> /{" "}
+              {targetWords.length}
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Game Layout: Grid + Word Checklist */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 items-start">
         {/* Left 2 Cols: The Interactive Word Matrix */}
-        <div className="lg:col-span-2 bg-slate-950/80 border border-slate-800 rounded-3xl p-4 sm:p-6 shadow-2xl relative overflow-hidden">
+        <div className="lg:col-span-2 bg-slate-950/80 border border-slate-800 rounded-2xl sm:rounded-3xl p-2.5 sm:p-6 shadow-2xl relative overflow-hidden">
           {/* Selection Live Preview Banner */}
-          <div className="h-8 mb-3 flex items-center justify-between px-2">
-            <div className="text-xs font-medium text-slate-400">
-              {isSelecting ? (
+          <div className="min-h-7 mb-2.5 flex items-center justify-between px-1">
+            <div className="text-xs font-medium text-slate-300">
+              {tapSelecting ? (
+                <span className="text-cyan-300 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping inline-block" />
+                  <span>
+                    Selected: <strong>{currentSelectionString}</strong> — Now tap the ending letter!
+                  </span>
+                </span>
+              ) : isSelecting ? (
                 <span className="text-cyan-400 font-mono tracking-widest text-sm animate-pulse">
                   Selecting: {currentSelectionString || "..."}
                 </span>
               ) : (
-                <span>Drag to connect letters in any direction</span>
+                <span className="text-slate-400">
+                  Tip: Drag with finger, or tap the first & last letters!
+                </span>
               )}
             </div>
             {isWon && (
-              <span className="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                🎉 Puzzle Solved!
+              <span className="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                🎉 Solved!
               </span>
             )}
           </div>
 
-          {/* Grid Container */}
+          {/* Grid Container with Touch Move Listener */}
           <div
             ref={gridRef}
-            className="w-full aspect-square max-w-[580px] mx-auto grid gap-1.5 sm:gap-2 p-2 sm:p-3 bg-slate-900/90 rounded-2xl border border-slate-800 touch-none select-none"
+            onTouchMove={handleGridTouchMove}
+            className="w-full aspect-square max-w-[540px] mx-auto grid gap-0.5 sm:gap-1.5 p-1 sm:p-3 bg-slate-900/90 rounded-xl sm:rounded-2xl border border-slate-800 touch-none select-none"
             style={{
               gridTemplateColumns: `repeat(${gridConfig.size}, minmax(0, 1fr))`
             }}
@@ -859,23 +1000,32 @@ export default function WordSearch() {
                 const selected = isCellSelected(r, c);
                 const foundColor = getFoundCellColor(r, c);
                 const isHintCell = activeHint?.r === r && activeHint?.c === c;
+                const isStartTapCell =
+                  tapSelecting &&
+                  selectionStart?.r === r &&
+                  selectionStart?.c === c;
 
                 return (
                   <div
                     key={`${r}-${c}`}
-                    onPointerDown={() => handlePointerDown(r, c)}
-                    onPointerEnter={() => handlePointerEnter(r, c)}
+                    data-cell="true"
+                    data-row={r}
+                    data-col={c}
+                    onPointerDown={() => handleCellPointerDown(r, c)}
+                    onPointerEnter={() => handleCellPointerEnter(r, c)}
                     className={`
-                      relative aspect-square rounded-lg sm:rounded-xl flex items-center justify-center
-                      font-mono font-bold text-xs sm:text-base md:text-lg cursor-pointer transition-all duration-150
+                      relative aspect-square rounded-md sm:rounded-xl flex items-center justify-center
+                      font-mono font-bold ${gridConfig.cellFont} cursor-pointer transition-all duration-100
                       ${
                         foundColor
                           ? "text-slate-950 shadow-md font-extrabold scale-[0.98]"
+                          : isStartTapCell
+                          ? "bg-cyan-400 text-slate-950 ring-2 ring-white scale-105 z-20 font-black shadow-lg shadow-cyan-500/50 animate-pulse"
                           : selected
                           ? "bg-cyan-400 text-slate-950 ring-2 ring-cyan-300 scale-105 z-10 font-black shadow-lg shadow-cyan-500/30"
                           : isHintCell
                           ? "bg-amber-400 text-slate-950 animate-bounce ring-4 ring-amber-300/50 z-20 font-black"
-                          : "bg-slate-800/80 text-slate-300 hover:bg-slate-700/80 hover:text-white"
+                          : "bg-slate-800/80 text-slate-300 hover:bg-slate-700/80 active:bg-cyan-500/40"
                       }
                     `}
                     style={{
@@ -883,9 +1033,8 @@ export default function WordSearch() {
                     }}
                   >
                     {char}
-                    {/* Glowing dot for hint */}
                     {isHintCell && (
-                      <span className="absolute -top-1 -right-1 w-3 h-3 bg-amber-300 rounded-full animate-ping" />
+                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-300 rounded-full animate-ping" />
                     )}
                   </div>
                 );
@@ -895,11 +1044,11 @@ export default function WordSearch() {
         </div>
 
         {/* Right Col: Target Words Checklist & Player Stats */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Target Words Card */}
-          <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl">
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl">
+            <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-800">
+              <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
                 <span>🔍</span> Hidden Words
               </h3>
               <span className="text-xs text-slate-400 font-mono">
@@ -907,7 +1056,7 @@ export default function WordSearch() {
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 max-h-[360px] overflow-y-auto pr-1">
+            <div className="grid grid-cols-2 gap-1.5 sm:gap-2 max-h-[300px] sm:max-h-[360px] overflow-y-auto pr-1">
               {targetWords.map((word) => {
                 const foundItem = foundWords.find((fw) => fw.word === word);
                 const isFound = !!foundItem;
@@ -918,7 +1067,7 @@ export default function WordSearch() {
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
                     className={`
-                      px-3 py-2 rounded-xl text-xs font-mono font-semibold transition-all duration-200
+                      px-2.5 py-1.5 rounded-xl text-[11px] sm:text-xs font-mono font-semibold transition-all duration-200
                       flex items-center justify-between border
                       ${
                         isFound
@@ -930,7 +1079,7 @@ export default function WordSearch() {
                     <span className="truncate">{word}</span>
                     {isFound && (
                       <span
-                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0 ml-1"
                         style={{ backgroundColor: foundItem.color }}
                       />
                     )}
@@ -941,34 +1090,42 @@ export default function WordSearch() {
           </div>
 
           {/* Stats Dashboard Card */}
-          <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300 mb-4 flex items-center gap-2">
+          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl">
+            <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-300 mb-3 flex items-center gap-2">
               <span>🏆</span> Career Stats
             </h3>
-            <div className="grid grid-cols-2 gap-3 text-center">
-              <div className="bg-slate-800/50 p-3 rounded-2xl border border-slate-800">
-                <span className="text-xs text-slate-400 block mb-0.5">Puzzles Won</span>
-                <span className="text-xl font-bold text-emerald-400 font-mono">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 text-center">
+              <div className="bg-slate-800/50 p-2.5 sm:p-3 rounded-2xl border border-slate-800">
+                <span className="text-[11px] text-slate-400 block mb-0.5">
+                  Puzzles Won
+                </span>
+                <span className="text-lg sm:text-xl font-bold text-emerald-400 font-mono">
                   {stats.gamesWon}
                 </span>
               </div>
-              <div className="bg-slate-800/50 p-3 rounded-2xl border border-slate-800">
-                <span className="text-xs text-slate-400 block mb-0.5">Words Found</span>
-                <span className="text-xl font-bold text-cyan-400 font-mono">
+              <div className="bg-slate-800/50 p-2.5 sm:p-3 rounded-2xl border border-slate-800">
+                <span className="text-[11px] text-slate-400 block mb-0.5">
+                  Words Found
+                </span>
+                <span className="text-lg sm:text-xl font-bold text-cyan-400 font-mono">
                   {stats.wordsFound}
                 </span>
               </div>
-              <div className="bg-slate-800/50 p-3 rounded-2xl border border-slate-800">
-                <span className="text-xs text-slate-400 block mb-0.5">Best Time ({difficulty})</span>
-                <span className="text-sm font-bold text-amber-300 font-mono">
+              <div className="bg-slate-800/50 p-2.5 sm:p-3 rounded-2xl border border-slate-800">
+                <span className="text-[11px] text-slate-400 block mb-0.5">
+                  Best Time ({difficulty})
+                </span>
+                <span className="text-xs sm:text-sm font-bold text-amber-300 font-mono">
                   {stats.bestTimes[difficulty] !== null
                     ? formatTime(stats.bestTimes[difficulty]!)
                     : "--:--"}
                 </span>
               </div>
-              <div className="bg-slate-800/50 p-3 rounded-2xl border border-slate-800">
-                <span className="text-xs text-slate-400 block mb-0.5">Total Points</span>
-                <span className="text-sm font-bold text-purple-300 font-mono">
+              <div className="bg-slate-800/50 p-2.5 sm:p-3 rounded-2xl border border-slate-800">
+                <span className="text-[11px] text-slate-400 block mb-0.5">
+                  Total Points
+                </span>
+                <span className="text-xs sm:text-sm font-bold text-purple-300 font-mono">
                   {stats.totalScore}
                 </span>
               </div>
@@ -992,20 +1149,30 @@ export default function WordSearch() {
               exit={{ scale: 0.9, y: 20 }}
               className="bg-slate-900 border border-slate-700 p-6 sm:p-8 rounded-3xl max-w-md w-full text-center shadow-2xl relative overflow-hidden"
             >
-              <div className="text-6xl mb-3 animate-bounce">🎉</div>
-              <h2 className="text-2xl font-bold text-slate-100 mb-2">
+              <div className="text-5xl sm:text-6xl mb-3 animate-bounce">🎉</div>
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-100 mb-2">
                 Matrix Decoded!
               </h2>
-              <p className="text-sm text-slate-400 mb-6">
-                You found all <span className="text-cyan-400 font-bold">{targetWords.length} words</span> in{" "}
-                <span className="text-emerald-400 font-mono font-bold">{formatTime(seconds)}</span> on{" "}
-                <span className="capitalize text-purple-300 font-bold">{difficulty}</span> mode.
+              <p className="text-xs sm:text-sm text-slate-400 mb-6">
+                You found all{" "}
+                <span className="text-cyan-400 font-bold">
+                  {targetWords.length} words
+                </span>{" "}
+                in{" "}
+                <span className="text-emerald-400 font-mono font-bold">
+                  {formatTime(seconds)}
+                </span>{" "}
+                on{" "}
+                <span className="capitalize text-purple-300 font-bold">
+                  {difficulty}
+                </span>{" "}
+                mode.
               </p>
 
               <div className="flex gap-3 justify-center">
                 <button
                   onClick={() => startNewGame()}
-                  className="w-full py-3 rounded-2xl font-semibold bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 hover:from-cyan-400 hover:to-blue-400 transition-all duration-150 shadow-lg shadow-cyan-500/25"
+                  className="w-full py-3 rounded-2xl font-semibold bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 hover:from-cyan-400 hover:to-blue-400 transition-all duration-150 shadow-lg shadow-cyan-500/25 active:scale-95"
                 >
                   Play Next Puzzle 🚀
                 </button>
@@ -1028,15 +1195,15 @@ export default function WordSearch() {
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-slate-900 border border-slate-700 p-6 rounded-3xl max-w-lg w-full shadow-2xl"
+              className="bg-slate-900 border border-slate-700 p-5 sm:p-6 rounded-3xl max-w-lg w-full shadow-2xl"
             >
               <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-800">
-                <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                <h3 className="text-base sm:text-lg font-bold text-slate-100 flex items-center gap-2">
                   <span>✏️</span> Create Custom Word Search
                 </h3>
                 <button
                   onClick={() => setIsCustomModalOpen(false)}
-                  className="text-slate-400 hover:text-slate-200 text-sm"
+                  className="text-slate-400 hover:text-slate-200 text-sm p-1"
                 >
                   ✕
                 </button>
@@ -1048,11 +1215,11 @@ export default function WordSearch() {
                     Enter words (separated by commas or new lines):
                   </label>
                   <textarea
-                    rows={5}
+                    rows={4}
                     value={customWordsInput}
                     onChange={(e) => setCustomWordsInput(e.target.value)}
                     placeholder="WONDERLAB, EXPERIMENT, REACTION, SYNAPSE, MATRIX, COSMOS"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm font-mono text-cyan-300 focus:outline-none focus:border-cyan-500"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs sm:text-sm font-mono text-cyan-300 focus:outline-none focus:border-cyan-500"
                   />
                   <p className="text-[11px] text-slate-500 mt-1">
                     Words must be between 3 and 12 letters long. Non-alphabet characters are stripped.
@@ -1069,7 +1236,7 @@ export default function WordSearch() {
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 rounded-xl text-xs font-semibold bg-purple-500 hover:bg-purple-400 text-slate-950 transition-all duration-150 shadow-lg shadow-purple-500/20"
+                    className="px-5 py-2 rounded-xl text-xs font-semibold bg-purple-500 hover:bg-purple-400 text-slate-950 transition-all duration-150 shadow-lg shadow-purple-500/20 active:scale-95"
                   >
                     Generate Puzzle ✨
                   </button>
